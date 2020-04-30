@@ -11,8 +11,10 @@ url='https://github.com/DominicBreuker/pspy'
 license=('GPL3')
 depends=('glibc')
 makedepends=('git' 'go-pie')
+options=('!strip')
 source=("git+https://github.com/DominicBreuker/$pkgname.git")
 sha512sums=('SKIP')
+_url="github.com/DominicBreuker/$pkgname"
 
 pkgver() {
   cd $pkgname
@@ -21,19 +23,20 @@ pkgver() {
 }
 
 build() {
-  cd $pkgname
+  mkdir -p "src/$_url" && rm -rf "src/$_url" && mv $pkgname "src/$_url" &&
+    cd "src/$_url"
 
-  GOPATH="$srcdir" go get -d -t .
+  GOPATH="$srcdir" go get -d -t $_url
 }
 
 package() {
-  cd $pkgname
+  install -dm 755 "$pkgdir/usr/bin"
 
-  GOPATH="$srcdir" go build -v .
+  GOPATH="$srcdir" go build -v $_url
 
-  install -Dm 755 pspy "$pkgdir/usr/bin/$pkgname"
-  install -dm 755 "$pkgdir/usr/share/$pkgname/"{images,docker}
-  install -Dm 644 -t "$pkgdir/usr/share/doc/$pkgname/" *.md
-  install -Dm 644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm 755 "$srcdir/pspy" "$pkgdir/usr/bin/$pkgname"
+  install -Dm 644 -t "$pkgdir/usr/share/doc/$pkgname/" "src/$_url/README.md"
+  install -Dm 644 "src/$_url/LICENSE" \
+    "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
 
